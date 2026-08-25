@@ -17,6 +17,7 @@ export function Auth() {
   const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [loginSuccess, setLoginSuccess] = useState('');
 
   // Register Form States
   const [regName, setRegName] = useState('');
@@ -119,6 +120,7 @@ export function Auth() {
   const handleForgotPasswordSubmit = async (e) => {
     e.preventDefault();
     setForgotMsg({ text: '', type: '' });
+    setLoginSuccess('');
 
     if (!forgotEmail) {
       setForgotMsg({ text: 'Please enter your email address', type: 'error' });
@@ -127,8 +129,9 @@ export function Auth() {
 
     const res = await forgotPassword(forgotEmail);
     if (res.success) {
-      setForgotMsg({ text: res.message || 'Reset link sent successfully!', type: 'success' });
+      setLoginSuccess(res.message || 'If the email is registered, a password reset link has been dispatched.');
       setForgotEmail('');
+      setIsForgotPassword(false);
     } else {
       setForgotMsg({ text: res.error || 'Failed to dispatch reset link', type: 'error' });
     }
@@ -389,6 +392,7 @@ export function Auth() {
               setIsLoginTab(true);
               setRegGeneralError('');
               setRegErrors({});
+              setLoginSuccess('');
             }}
           >
             Sign In
@@ -400,6 +404,7 @@ export function Auth() {
             onClick={() => {
               setIsLoginTab(false);
               setLoginError('');
+              setLoginSuccess('');
             }}
           >
             Sign Up
@@ -420,6 +425,17 @@ export function Auth() {
                 exit={{ opacity: 0, x: 15 }}
                 transition={{ duration: 0.25 }}
               >
+                {loginSuccess && (
+                  <motion.div 
+                    className="alert alert-success"
+                    style={{ background: 'rgba(52, 211, 153, 0.15)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399', padding: '12px', borderRadius: '8px', fontSize: '0.9rem', marginBottom: '16px', textAlign: 'left' }}
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    {loginSuccess}
+                  </motion.div>
+                )}
+
                 {loginError && (
                   <motion.div 
                     className="alert alert-error"
