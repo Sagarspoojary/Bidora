@@ -13,16 +13,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  mongodb:
-    image: mongo:6.0
-    container_name: bidora-mongodb
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_DATABASE: bidora
-    volumes:
-      - mongodb_data:/data/db
-
   redis:
     image: redis:7-alpine
     container_name: bidora-redis
@@ -33,5 +23,4 @@ services:
 
 volumes:
   postgres_data:
-  mongodb_data:
   redis_data:
