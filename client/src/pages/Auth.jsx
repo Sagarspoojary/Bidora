@@ -481,6 +481,20 @@ export function Auth() {
                 >
                   {loading ? 'Entering Arena...' : 'Place Entry Credentials'}
                 </motion.button>
+
+                <div className="auth-divider">
+                  <span>Or Secure Enter With</span>
+                </div>
+
+                <div className="oauth-grid" style={{ gridTemplateColumns: '1fr', display: 'flex', justifyContent: 'center' }}>
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    theme="filled_dark"
+                    shape="pill"
+                    width="370"
+                  />
+                </div>
               </motion.form>
             ) : (
               <motion.form
@@ -569,21 +583,6 @@ export function Auth() {
               </motion.form>
             )}
           </AnimatePresence>
-        </div>
-
-        <div className="auth-divider">
-          <span>Or Secure Enter With</span>
-        </div>
-
-        {/* Aesthetic Social buttons */}
-        <div className="oauth-grid" style={{ gridTemplateColumns: '1fr', display: 'flex', justifyContent: 'center' }}>
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleError}
-            theme="filled_dark"
-            shape="pill"
-            width="400"
-          />
         </div>
       </motion.div>
     </div>
