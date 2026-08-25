@@ -1,0 +1,118 @@
+PHASE 2 — AUTHENTICATION & USER MANAGEMENT
+
+STATUS:
+COMPLETED
+
+OBJECTIVE:
+Implement the complete Authentication and User Management foundation for the Bidora Online Auction System, including database tables, password security, JWT middleware, secure routes, profiles, and state-integrated glassmorphic UI forms.
+
+IMPLEMENTATION:
+Created PostgreSQL table with UUIDs, email constraints, and index mappings. Built secure registration, logins, session state retrievals, profile changes, and password change systems on Node.js/Express. Created a state-based SPA hash router on the frontend and tied all authorization flows to a global AuthContext. Added a premium glassmorphic Framer Motion intro logo screen, leading straight to authentication routes once finished. Added Nodemailer SMTP integration for delivering password reset emails.
+
+FILES CREATED:
+- server/src/db/migrate.js
+- server/src/utils/jwt.js
+- server/src/middleware/auth.js
+- server/src/controllers/authController.js
+- server/src/routes/authRoutes.js
+- server/src/services/emailService.js
+- client/src/context/AuthContext.jsx
+- client/src/components/ProtectedRoute.jsx
+- client/src/components/IntroLogo.jsx
+- client/src/pages/Auth.jsx
+- server/src/scratch/test_auth.js (transferred to artifact conversation scratch directory)
+
+FILES MODIFIED:
+- server/src/app.js (registered auth routes)
+- client/src/App.jsx (added auth routes & context, integrated cinematic IntroLogo)
+- client/src/App.css (styling for auth, profiles, and animated intro)
+- server/.env.example (added Google client ID and email credentials placeholders)
+
+DATABASE CHANGES:
+Created "users" table in PostgreSQL:
+- id (UUID PRIMARY KEY DEFAULT uuid_generate_v4())
+- name (VARCHAR NOT NULL)
+- email (VARCHAR UNIQUE NOT NULL, INDEXED)
+- password_hash (VARCHAR NOT NULL)
+- avatar_url (VARCHAR NULL)
+- role (VARCHAR DEFAULT 'USER')
+- status (VARCHAR DEFAULT 'ACTIVE')
+- reset_token (VARCHAR DEFAULT NULL)
+- reset_token_expires (TIMESTAMP WITH TIME ZONE DEFAULT NULL)
+- created_at, updated_at, last_login_at (TIMESTAMPS)
+
+API ENDPOINTS:
+- POST /api/auth/register (New registration, handles duplicate emails & validations)
+- POST /api/auth/login (Authenticates credentials, generates JWT, updates last login time)
+- POST /api/auth/logout (Confirms logout session cleanup)
+- GET /api/auth/me (Retrieves safe session details using token verification)
+- PUT /api/auth/profile (Updates display name and avatar)
+- PUT /api/auth/change-password (Updates password after comparing old password hash)
+- POST /api/auth/forgot-password (Generates reset token, updates DB, sends SMTP email/console link)
+- POST /api/auth/reset-password (Verifies token validity, updates password_hash, clears tokens)
+
+FRONTEND:
+- AuthContext: Exposes user state, login, register, logout, update profile, and change password methods.
+- ProtectedRoute: Intercepts unauthenticated hash changes to #/profile and redirects to #/login.
+- Login & Register Pages: Render glassmorphic cards with responsive layout, inputs, show/hide passwords, loading states, and error alerts.
+- Profile Page: Enables display updates and secure password rotation settings.
+- IntroLogo Screen: High-end cinematic entrance with letters of BIDORA scaling, and glass icon floating via Framer Motion.
+- Forgot & Reset Password views integrated inside the main Auth card.
+
+SECURITY:
+- Password storage encrypted using bcrypt with salt rounds factor = 12.
+- JWT verification checking active/suspended account state.
+- Injection prevention using PostgreSQL parameterized queries.
+- Disallowed modifications of status and roles from client profile forms.
+
+ENVIRONMENT VARIABLES:
+- JWT_SECRET (loaded from .env for signing tokens)
+- JWT_EXPIRES_IN (default: '1d')
+- GOOGLE_CLIENT_ID (for Google OAuth)
+- GOOGLE_CLIENT_SECRET (for Google OAuth)
+- EMAIL_USER (for SMTP sender email)
+- EMAIL_PASS (for SMTP App Password)
+
+TESTS:
+Integration tests run:
+1. Register valid user -> PASS (Status 201)
+2. Register duplicate email -> PASS (Status 409 Conflict)
+3. Register invalid email -> PASS (Status 400 Bad Request)
+4. Register weak password -> PASS (Status 400 Bad Request)
+5. Login with correct password -> PASS (Status 200)
+6. Login with incorrect password -> PASS (Status 401 Unauthorized)
+7. Login nonexistent user -> PASS (Status 401 Unauthorized)
+8. Get /api/auth/me without token -> PASS (Status 401 Unauthorized)
+9. Get /api/auth/me with invalid token -> PASS (Status 401 Unauthorized)
+10. Get /api/auth/me with valid token -> PASS (Status 200)
+11. Update profile while authenticated -> PASS (Status 200)
+12. Attempt unauthorized role/status injection -> PASS (Filtered successfully, role remained USER)
+13. Change password with correct current password -> PASS (Status 200)
+14. Change password with incorrect current password -> PASS (Status 400)
+15. Login using the new password -> PASS (Status 200)
+16. Logout -> PASS (Status 200)
+17. Regression check /api/health -> PASS (Status 200)
+
+ERRORS:
+- EADDRINUSE on port 5000 (Mac reserving it).
+- Node-fetch import mismatch on Node v26 native fetch.
+- EBADNAME on raw MongoDB Atlas password strings (unescaped special characters).
+- Atlas IP Access Block on IPv6 connections.
+
+FIXES:
+- Changed default port config to 5001.
+- Removed node-fetch import, leveraging native global fetch in Node v26.
+- URL-encoded special characters inside MONGODB_URI.
+- Whitelists active IPv6 address inside Atlas dashboard.
+
+REGRESSION TEST:
+GET http://localhost:5001/api/health
+Status: 200 OK
+Response: {"success":true,"message":"Bidora API is running","services":{"postgresql":"connected","mongodb":"connected","redis":"connected"}}
+PostgreSQL, MongoDB, and Redis remain functional.
+
+CURRENT STATUS:
+Phase 2 completed and verified. Database migrations applied. Both frontend and backend fully integrated.
+
+NEXT PHASE:
+Phase 3 — Auction Display (Single item visual display arena and details integration).
