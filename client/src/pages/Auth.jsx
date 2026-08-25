@@ -132,6 +132,11 @@ export function Auth() {
       setLoginSuccess(res.message || 'If the email is registered, a password reset link has been dispatched.');
       setForgotEmail('');
       setIsForgotPassword(false);
+
+      // Auto-dismiss the success message after 4 seconds
+      setTimeout(() => {
+        setLoginSuccess('');
+      }, 4000);
     } else {
       setForgotMsg({ text: res.error || 'Failed to dispatch reset link', type: 'error' });
     }
