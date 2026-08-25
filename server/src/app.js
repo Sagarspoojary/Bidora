@@ -6,6 +6,7 @@ import healthRouter from './routes/health.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 import authRouter from './routes/authRoutes.js';
+import auctionRouter from './routes/auctionRoutes.js';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use(express.json());
 // Routes
 app.use('/api', healthRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/auctions', auctionRouter);
 
 // Error Handling Middleware
 app.use(errorHandler);
