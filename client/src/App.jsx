@@ -3,7 +3,13 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { IntroLogo } from './components/IntroLogo';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Auth from './pages/Auth';
-import AuctionArena from './pages/AuctionArena';
+import DashboardLayout from './components/DashboardLayout';
+import Dashboard from './pages/Dashboard';
+import Auctions from './pages/Auctions';
+import CreateAuction from './pages/CreateAuction';
+import MyBids from './pages/MyBids';
+import MyAuctions from './pages/MyAuctions';
+import History from './pages/History';
 import './App.css';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1017326442654-placeholderid.apps.googleusercontent.com';
@@ -21,18 +27,33 @@ function MainAppContent() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Handle automatic route redirects based on authentication state
+  const navigateTo = (path) => {
+    window.location.hash = path;
+  };
+
+  // Handle protected redirects and guards
   useEffect(() => {
     if (!loading) {
+      const protectedPaths = [
+        '#/dashboard',
+        '#/auctions',
+        '#/create-auction',
+        '#/my-bids',
+        '#/my-auctions',
+        '#/history'
+      ];
+
+      const isPathProtected = protectedPaths.includes(currentPath);
+
       if (user) {
-        // Authenticated users go straight to the Auction Arena dashboard
+        // Authenticated user on entry/auth pages -> redirect to Dashboard
         if (currentPath === '#/login' || currentPath === '#/register' || currentPath === '#/') {
-          window.location.hash = '#/arena';
+          navigateTo('#/dashboard');
         }
       } else {
-        // Unauthenticated users are forced to log in
-        if (currentPath === '#/arena') {
-          window.location.hash = '#/login';
+        // Unauthenticated user trying to access any protected workspace path -> force login redirect
+        if (isPathProtected || currentPath === '#/') {
+          navigateTo('#/login');
         }
       }
     }
@@ -42,21 +63,53 @@ function MainAppContent() {
     setShowIntro(false);
     if (!loading) {
       if (user) {
-        window.location.hash = '#/arena';
+        navigateTo('#/dashboard');
       } else {
-        window.location.hash = '#/login';
+        navigateTo('#/login');
       }
     }
   };
 
-  // If intro is running, render animated IntroLogo
+  // If intro is active on entry, render IntroLogo
   if (showIntro && currentPath === '#/') {
     return <IntroLogo onComplete={handleIntroComplete} />;
   }
 
-  // Route mapping
-  if (currentPath === '#/arena' && user) {
-    return <AuctionArena />;
+  // Routing and Layout rendering
+  const renderPage = () => {
+    switch (currentPath) {
+      case '#/dashboard':
+        return <Dashboard />;
+      case '#/auctions':
+        return <Auctions />;
+      case '#/create-auction':
+        return <CreateAuction />;
+      case '#/my-bids':
+        return <MyBids />;
+      case '#/my-auctions':
+        return <MyAuctions />;
+      case '#/history':
+        return <History />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
+  const protectedPaths = [
+    '#/dashboard',
+    '#/auctions',
+    '#/create-auction',
+    '#/my-bids',
+    '#/my-auctions',
+    '#/history'
+  ];
+
+  if (user && protectedPaths.includes(currentPath)) {
+    return (
+      <DashboardLayout currentPath={currentPath} navigateTo={navigateTo}>
+        {renderPage()}
+      </DashboardLayout>
+    );
   }
 
   return <Auth />;
