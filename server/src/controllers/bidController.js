@@ -29,7 +29,7 @@ export async function placeBid(req, res) {
 
     // Retrieve and lock the auction row for updates
     const checkQuery = `
-      SELECT id, current_price, starting_price, currency, start_time, end_time 
+      SELECT id, current_price, starting_price, currency, start_time, end_time, created_by, title 
       FROM auctions 
       WHERE id = $1 
       FOR UPDATE;
@@ -94,6 +94,38 @@ export async function placeBid(req, res) {
       WHERE id = $2;
     `;
     await client.query(updateQuery, [bidAmount, auction_id]);
+
+    // 1. Send notification to the auction creator (if someone else bids)
+    if (auction.created_by && auction.created_by !== userId) {
+      const symbol = getCurrencySymbol(auction.currency);
+      await client.query(
+        `INSERT INTO notifications (user_id, title, message) VALUES ($1, $2, $3);`,
+        [
+          auction.created_by,
+          'New Bid Received!',
+          `A new bid of ${symbol}${Number(bidAmount).toLocaleString('en-US')} has been placed on your item "${auction.title}".`
+        ]
+      );
+    }
+
+    // 2. Send notification to the previous highest bidder (if they are outbid)
+    const prevHighestResult = await client.query(
+      `SELECT user_id FROM bids WHERE auction_id = $1 ORDER BY amount DESC LIMIT 1 OFFSET 1;`,
+      [auction_id]
+    );
+    if (prevHighestResult.rows.length > 0) {
+      const prevBid = prevHighestResult.rows[0];
+      if (prevBid.user_id && prevBid.user_id !== userId) {
+        await client.query(
+          `INSERT INTO notifications (user_id, title, message) VALUES ($1, $2, $3);`,
+          [
+            prevBid.user_id,
+            'You have been Outbid!',
+            `Someone placed a higher bid on "${auction.title}". Your bid is no longer the highest offer.`
+          ]
+        );
+      }
+    }
 
     // Commit transaction
     await client.query('COMMIT');

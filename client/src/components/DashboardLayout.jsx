@@ -17,7 +17,7 @@ export function DashboardLayout({ children, currentPath, navigateTo }) {
   const profileRef = useRef(null);
   const notifyRef = useRef(null);
 
-  // Load notifications
+  // Load notifications and poll every 10 seconds
   useEffect(() => {
     const loadNotify = async () => {
       try {
@@ -28,7 +28,22 @@ export function DashboardLayout({ children, currentPath, navigateTo }) {
       }
     };
     loadNotify();
+    const interval = setInterval(loadNotify, 10000);
+    return () => clearInterval(interval);
   }, []);
+
+  const handleToggleNotifications = async () => {
+    const nextOpenState = !isNotificationsOpen;
+    setIsNotificationsOpen(nextOpenState);
+    if (nextOpenState) {
+      try {
+        await notificationService.markAllAsRead();
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      } catch (err) {
+        console.error('Failed to mark notifications as read:', err);
+      }
+    }
+  };
 
   // Handle outside clicks to close dropdowns
   useEffect(() => {
@@ -105,10 +120,13 @@ export function DashboardLayout({ children, currentPath, navigateTo }) {
             <button 
               type="button" 
               className={`nav-action-btn ${isNotificationsOpen ? 'active' : ''}`}
-              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              onClick={handleToggleNotifications}
             >
               🔔
-              {notifications.length > 0 && <span className="notification-badge">{notifications.length}</span>}
+              {(() => {
+                const unreadCount = notifications.filter(n => !n.is_read).length;
+                return unreadCount > 0 ? <span className="notification-badge">{unreadCount}</span> : null;
+              })()}
             </button>
             
             <AnimatePresence>
@@ -126,9 +144,16 @@ export function DashboardLayout({ children, currentPath, navigateTo }) {
                       <div className="empty-state-text">No new notifications</div>
                     ) : (
                       notifications.map(n => (
-                        <div key={n.id} className="notification-item">
-                          <p className="notify-text">{n.text}</p>
-                          <span className="notify-time">{n.time}</span>
+                        <div key={n.id} className="notification-item" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <p className="notify-title" style={{ fontWeight: '700', fontSize: '0.85rem', color: n.is_read ? '#cbd5e1' : '#fbbf24', margin: 0 }}>
+                            {n.title}
+                          </p>
+                          <p className="notify-text" style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0, lineHeight: '1.4' }}>
+                            {n.message}
+                          </p>
+                          <span className="notify-time" style={{ fontSize: '0.65rem', color: '#64748b', alignSelf: 'flex-end', marginTop: '4px' }}>
+                            {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
                         </div>
                       ))
                     )}

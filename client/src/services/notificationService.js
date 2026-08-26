@@ -9,21 +9,25 @@ const getHeaders = () => {
 };
 
 export const notificationService = {
-  // Get notifications
+  // Get notifications from database
   getNotifications: async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/notifications`, {
-        headers: getHeaders(),
-      });
-      if (response.ok) {
-        const result = await response.json();
-        return result.data || [];
-      }
-    } catch (err) {
-      console.warn('Backend /notifications not ready, using default empty list.');
-    }
-    // Return empty array to trigger correct dashboard empty state ("No new notifications")
-    return [];
+    const response = await fetch(`${API_BASE_URL}/notifications`, {
+      headers: getHeaders(),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to fetch notifications');
+    return result.data || [];
+  },
+
+  // Mark all notifications as read in database
+  markAllAsRead: async () => {
+    const response = await fetch(`${API_BASE_URL}/notifications/read`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to mark notifications as read');
+    return result;
   }
 };
 

@@ -155,9 +155,31 @@ export async function createAuction(req, res) {
       userId,
     ]);
 
+    const insertedAuction = result.rows[0];
+
+    // Send notifications to all users
+    try {
+      const usersResult = await pgPool.query('SELECT id FROM users;');
+      const currencyMap = { USD: '$', INR: '₹', EUR: '€', GBP: '£' };
+      const symbol = currencyMap[insertedAuction.currency] || '$';
+      
+      for (const row of usersResult.rows) {
+        await pgPool.query(
+          `INSERT INTO notifications (user_id, title, message) VALUES ($1, $2, $3);`,
+          [
+            row.id, 
+            'New Auction Registered!', 
+            `A new premium asset "${insertedAuction.title}" has been listed starting at ${symbol}${Number(insertedAuction.starting_price).toLocaleString('en-US')}.`
+          ]
+        );
+      }
+    } catch (notifyErr) {
+      console.error('Failed to dispatch new auction notifications:', notifyErr.message);
+    }
+
     return res.status(201).json({
       success: true,
-      data: formatAuctionRow(result.rows[0]),
+      data: formatAuctionRow(insertedAuction),
     });
   } catch (error) {
     console.error('Create auction error:', error.message);
