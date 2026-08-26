@@ -46,53 +46,71 @@ export function MyBids() {
         <div className="workspace-list-grid">
           {bids.map((bid, idx) => {
             const isWinning = bid.status === 'Winning';
+            const handleViewArena = () => {
+              window.location.hash = `#/auctions/${bid.id}`;
+            };
+
             return (
               <motion.div 
                 key={bid.id} 
                 className="workspace-item-card glass-card"
+                style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.06, type: 'spring', stiffness: 100 }}
               >
-                <div className="workspace-card-header">
-                  <h4 className="workspace-item-title">{bid.title}</h4>
-                  <span className={`status-badge-indicator ${isWinning ? 'status-winning' : 'status-losing'}`}>
-                    {bid.status}
-                  </span>
+                {/* Catalog Image Banner */}
+                <div className="catalog-image-wrap" style={{ height: '150px' }}>
+                  <img src={bid.image_url || '/images/luxury_watch.jpg'} alt={bid.title} className="catalog-img" />
+                  <span className={`catalog-status-badge ${isWinning ? 'status-live' : 'status-upcoming'}`}>LIVE</span>
                 </div>
 
-                {(() => {
-                  const getCurrencySymbol = (code) => {
-                    switch (code) {
-                      case 'INR': return '₹';
-                      case 'EUR': return '€';
-                      case 'GBP': return '£';
-                      default: return '$';
-                    }
-                  };
-                  const symbol = getCurrencySymbol(bid.currency);
-                  return (
-                    <div className="workspace-bid-meta">
-                      <div className="meta-price-box">
-                        <span className="meta-price-label">YOUR HIGHEST BID</span>
-                        <span className="meta-price-val">{symbol}{Number(bid.user_highest_bid).toLocaleString('en-US')}</span>
-                      </div>
+                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                  <div className="workspace-card-header" style={{ marginBottom: '12px' }}>
+                    <h4 className="workspace-item-title">{bid.title}</h4>
+                    <span className={`status-badge-indicator ${isWinning ? 'status-winning' : 'status-losing'}`}>
+                      {bid.status}
+                    </span>
+                  </div>
 
-                      <div className="meta-price-box">
-                        <span className="meta-price-label">CURRENT HIGHEST BID</span>
-                        <span className={`meta-price-val ${isWinning ? 'price-glow-green' : 'price-glow-red'}`}>
-                          {symbol}{Number(bid.current_highest_bid || bid.current_price).toLocaleString('en-US')}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })()}
+                  {(() => {
+                    const getCurrencySymbol = (code) => {
+                      switch (code) {
+                        case 'INR': return '₹';
+                        case 'EUR': return '€';
+                        case 'GBP': return '£';
+                        default: return '$';
+                      }
+                    };
+                    const symbol = getCurrencySymbol(bid.currency);
+                    return (
+                      <div className="workspace-bid-meta">
+                        <div className="meta-price-box">
+                          <span className="meta-price-label">YOUR HIGHEST BID</span>
+                          <span className="meta-price-val">{symbol}{Number(bid.user_highest_bid).toLocaleString('en-US')}</span>
+                        </div>
 
-                <div className="workspace-card-footer">
-                  <span className="workspace-time-remaining">Remaining: 24h</span>
-                  <button type="button" className="btn-workspace-action" disabled>
-                    View Arena
-                  </button>
+                        <div className="meta-price-box">
+                          <span className="meta-price-label">CURRENT HIGHEST BID</span>
+                          <span className={`meta-price-val ${isWinning ? 'price-glow-green' : 'price-glow-red'}`}>
+                            {symbol}{Number(bid.current_highest_bid || bid.current_price).toLocaleString('en-US')}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  <div className="workspace-card-footer" style={{ marginTop: '16px' }}>
+                    <span className="workspace-time-remaining">Remaining: 24h</span>
+                    <button 
+                      type="button" 
+                      className="btn-workspace-action" 
+                      onClick={handleViewArena}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      View Arena
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             );

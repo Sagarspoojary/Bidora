@@ -21,6 +21,16 @@ export const bidService = {
     return result;
   },
 
+  // Get all bids placed on a specific auction
+  getBidsByAuction: async (auctionId) => {
+    const response = await fetch(`${API_BASE_URL}/bids/auction/${auctionId}`, {
+      headers: getHeaders(),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to fetch bids history');
+    return result.data || [];
+  },
+
   // Get auctions the user has bid on
   getMyBids: async () => {
     try {

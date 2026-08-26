@@ -202,3 +202,31 @@ export async function getStats(req, res) {
     });
   }
 }
+
+// Retrieve all bids submitted to a specific auction
+export async function getBidsByAuction(req, res) {
+  const { auctionId } = req.params;
+
+  try {
+    const query = `
+      SELECT b.id, b.amount, b.created_at, u.name AS bidder_name
+      FROM bids b
+      JOIN users u ON b.user_id = u.id
+      WHERE b.auction_id = $1
+      ORDER BY b.amount DESC, b.created_at DESC;
+    `;
+
+    const result = await pgPool.query(query, [auctionId]);
+
+    return res.status(200).json({
+      success: true,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('Get bids by auction error:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error while fetching bids history.',
+    });
+  }
+}

@@ -13,6 +13,7 @@ export function AuctionDetails({ auctionId }) {
   const [bidAmount, setBidAmount] = useState('');
   const [bidStatus, setBidStatus] = useState({ success: '', error: '' });
   const [submittingBid, setSubmittingBid] = useState(false);
+  const [bidsList, setBidsList] = useState([]);
 
   const handleBidSubmit = async (e) => {
     e.preventDefault();
@@ -36,9 +37,13 @@ export function AuctionDetails({ auctionId }) {
       setBidStatus({ success: 'Bid placed successfully!', error: '' });
       setBidAmount('');
 
-      // Reload auction details to reflect the updated price
-      const updated = await auctionService.getById(auctionId);
+      // Reload auction details to reflect the updated price and bids history
+      const [updated, updatedBids] = await Promise.all([
+        auctionService.getById(auctionId),
+        bidService.getBidsByAuction(auctionId)
+      ]);
       setAuction(updated);
+      setBidsList(updatedBids);
 
       // Auto dismiss success alert
       setTimeout(() => {
@@ -58,8 +63,12 @@ export function AuctionDetails({ auctionId }) {
       try {
         setLoading(true);
         setError('');
-        const data = await auctionService.getById(auctionId);
+        const [data, bids] = await Promise.all([
+          auctionService.getById(auctionId),
+          bidService.getBidsByAuction(auctionId)
+        ]);
         setAuction(data);
+        setBidsList(bids);
       } catch (err) {
         console.error('Fetch auction details error:', err);
         setError(err.message || 'Unable to retrieve auction details.');
@@ -282,6 +291,49 @@ export function AuctionDetails({ auctionId }) {
                         : 'This auction has ended. No further bids can be accepted.'
                       }
                     </p>
+                  </div>
+
+                  {/* Bid History Ledger */}
+                  <div className="bid-history-section" style={{ marginTop: '24px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
+                    <h3 className="section-label" style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', color: '#94a3b8' }}>
+                      <span>BID HISTORY</span>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 'normal' }}>{bidsList.length} offers</span>
+                    </h3>
+                    {bidsList.length === 0 ? (
+                      <p style={{ fontSize: '0.85rem', color: '#64748b', fontStyle: 'italic', textAlign: 'center', padding: '12px' }}>
+                        No bids placed yet. Be the first to bid!
+                      </p>
+                    ) : (
+                      <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
+                        {bidsList.map((bid, index) => (
+                          <div 
+                            key={bid.id} 
+                            style={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              alignItems: 'center', 
+                              padding: '10px 14px', 
+                              background: index === 0 ? 'rgba(74, 222, 128, 0.04)' : 'rgba(255,255,255,0.02)', 
+                              border: index === 0 ? '1px solid rgba(74, 222, 128, 0.15)' : '1px solid rgba(255,255,255,0.04)',
+                              borderRadius: '10px' 
+                            }}
+                          >
+                            <div>
+                              <span style={{ fontSize: '0.85rem', fontWeight: '700', color: index === 0 ? '#4ade80' : '#fff', display: 'block' }}>
+                                {bid.bidder_name}
+                                {index === 0 && <span style={{ fontSize: '0.65rem', color: '#4ade80', marginLeft: '6px', background: 'rgba(74,222,128,0.12)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>Highest</span>}
+                              </span>
+                              <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                                {new Date(bid.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                              </span>
+                            </div>
+                            <span style={{ fontSize: '0.9rem', fontWeight: '800', color: index === 0 ? '#4ade80' : '#e2e8f0' }}>
+                              {symbol}{Number(bid.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </>
               );
