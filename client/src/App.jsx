@@ -10,6 +10,7 @@ import CreateAuction from './pages/CreateAuction';
 import MyBids from './pages/MyBids';
 import MyAuctions from './pages/MyAuctions';
 import History from './pages/History';
+import AuctionDetails from './pages/AuctionDetails';
 import './App.css';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1017326442654-placeholderid.apps.googleusercontent.com';
@@ -34,6 +35,7 @@ function MainAppContent() {
   // Handle protected redirects and guards
   useEffect(() => {
     if (!loading) {
+      const isDetailsPath = currentPath.startsWith('#/auctions/') && currentPath.split('/').length === 3;
       const protectedPaths = [
         '#/dashboard',
         '#/auctions',
@@ -43,7 +45,7 @@ function MainAppContent() {
         '#/history'
       ];
 
-      const isPathProtected = protectedPaths.includes(currentPath);
+      const isPathProtected = protectedPaths.includes(currentPath) || isDetailsPath;
 
       if (user) {
         // Authenticated user on entry/auth pages -> redirect to Dashboard
@@ -77,6 +79,12 @@ function MainAppContent() {
 
   // Routing and Layout rendering
   const renderPage = () => {
+    const isDetailsPath = currentPath.startsWith('#/auctions/') && currentPath.split('/').length === 3;
+    if (isDetailsPath) {
+      const auctionId = currentPath.split('/')[2];
+      return <AuctionDetails auctionId={auctionId} />;
+    }
+
     switch (currentPath) {
       case '#/dashboard':
         return <Dashboard />;
@@ -95,6 +103,7 @@ function MainAppContent() {
     }
   };
 
+  const isDetailsPath = currentPath.startsWith('#/auctions/') && currentPath.split('/').length === 3;
   const protectedPaths = [
     '#/dashboard',
     '#/auctions',
@@ -104,7 +113,7 @@ function MainAppContent() {
     '#/history'
   ];
 
-  if (user && protectedPaths.includes(currentPath)) {
+  if (user && (protectedPaths.includes(currentPath) || isDetailsPath)) {
     return (
       <DashboardLayout currentPath={currentPath} navigateTo={navigateTo}>
         {renderPage()}
