@@ -35,6 +35,24 @@ export const auctionService = {
     localStorage.setItem('bidora_created_auctions', JSON.stringify(list));
   },
 
+  // Helper to get deleted auction IDs tracking
+  getDeletedIds: () => {
+    try {
+      const stored = localStorage.getItem('bidora_deleted_auction_ids');
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  // Helper to save deleted IDs
+  saveDeletedId: (id) => {
+    const deleted = auctionService.getDeletedIds();
+    if (!deleted.includes(id)) {
+      localStorage.setItem('bidora_deleted_auction_ids', JSON.stringify([...deleted, id]));
+    }
+  },
+
   // Get all auctions (with optional search filter)
   getAll: async (search = '') => {
     // Default mock list
@@ -93,6 +111,10 @@ export const auctionService = {
     // Append locally created items from localStorage
     const localList = auctionService.getLocalAuctions();
     allAuctions = [...localList, ...allAuctions];
+
+    // Filter out deleted IDs
+    const deletedIds = auctionService.getDeletedIds();
+    allAuctions = allAuctions.filter(item => !deletedIds.includes(item.id));
 
     if (search.trim()) {
       return allAuctions.filter(item => 
@@ -160,11 +182,18 @@ export const auctionService = {
 
     // Append locally created items from localStorage
     const localList = auctionService.getLocalAuctions();
-    return [...localList, ...baseList];
+    let combined = [...localList, ...baseList];
+
+    // Filter out deleted IDs
+    const deletedIds = auctionService.getDeletedIds();
+    return combined.filter(item => !deletedIds.includes(item.id));
   },
 
   // Delete an auction
   delete: async (id) => {
+    // Save to deleted IDs tracker (to hide database centerpiece watch as well)
+    auctionService.saveDeletedId(id);
+
     // Remove from local list
     const currentLocal = auctionService.getLocalAuctions();
     const updatedLocal = currentLocal.filter(item => item.id !== id);
