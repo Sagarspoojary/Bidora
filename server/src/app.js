@@ -7,6 +7,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 import authRouter from './routes/authRoutes.js';
 import auctionRouter from './routes/auctionRoutes.js';
+import bidRouter from './routes/bidRoutes.js';
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use('/api', healthRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/auctions', auctionRouter);
+app.use('/api/bids', bidRouter);
 
 // Error Handling Middleware
 app.use(errorHandler);

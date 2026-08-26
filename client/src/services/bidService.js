@@ -9,6 +9,18 @@ const getHeaders = () => {
 };
 
 export const bidService = {
+  // Place a new bid on an auction
+  placeBid: async (auctionId, amount) => {
+    const response = await fetch(`${API_BASE_URL}/bids`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ auction_id: auctionId, amount: Number(amount) }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to place bid');
+    return result;
+  },
+
   // Get auctions the user has bid on
   getMyBids: async () => {
     try {
@@ -20,10 +32,8 @@ export const bidService = {
         return result.data || [];
       }
     } catch (err) {
-      console.warn('Backend bids/my-bids not ready');
+      console.warn('Backend bids/my-bids failed to load');
     }
-
-    // Default empty array so no fake bids display in client before Phase 4 (Bidding)
     return [];
   },
 
@@ -38,30 +48,12 @@ export const bidService = {
         return result.data;
       }
     } catch (err) {
-      console.warn('Backend bids/stats not ready');
+      console.warn('Backend bids/stats failed to load');
     }
-
-    // Dynamic mock lookup to count local auctions count from localStorage
-    let localAuctionsCount = 0;
-    try {
-      const stored = localStorage.getItem('bidora_created_auctions');
-      if (stored) {
-        localAuctionsCount = JSON.parse(stored).length;
-      }
-    } catch (e) {}
-
-    // Add centerpiece watch count (1) if it hasn't been deleted
-    let centerpieceActive = 1;
-    try {
-      const deleted = localStorage.getItem('bidora_deleted_auction_ids');
-      if (deleted && JSON.parse(deleted).includes('8922bdd8-91bb-4e53-8e4c-cf9b7eecbc75')) {
-        centerpieceActive = 0;
-      }
-    } catch (e) {}
 
     return {
       myBids: 0,
-      myAuctions: centerpieceActive + localAuctionsCount,
+      myAuctions: 0,
       activeParticipation: 0,
       auctionsWon: 0
     };

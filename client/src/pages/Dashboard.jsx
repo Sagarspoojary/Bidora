@@ -13,6 +13,53 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, expired: false });
 
+  // Bid placement state
+  const [bidAmount, setBidAmount] = useState('');
+  const [bidStatus, setBidStatus] = useState({ success: '', error: '' });
+  const [submittingBid, setSubmittingBid] = useState(false);
+
+  const handleBidSubmit = async (e) => {
+    e.preventDefault();
+    const parsedAmount = Number(bidAmount);
+    if (!bidAmount || isNaN(parsedAmount) || parsedAmount <= 0) {
+      setBidStatus({ success: '', error: 'Please enter a valid positive bid amount.' });
+      return;
+    }
+
+    const currentPrice = Number(activeAuction.current_price || activeAuction.starting_price);
+    if (parsedAmount <= currentPrice) {
+      setBidStatus({ success: '', error: `Bid must be strictly higher than current price of $${currentPrice.toLocaleString('en-US')}` });
+      return;
+    }
+
+    try {
+      setSubmittingBid(true);
+      setBidStatus({ success: '', error: '' });
+      await bidService.placeBid(activeAuction.id, parsedAmount);
+      
+      setBidStatus({ success: 'Bid placed successfully!', error: '' });
+      setBidAmount('');
+
+      // Reload dashboard data to reflect the updated price
+      const [statsData, auctionData] = await Promise.all([
+        bidService.getStats(),
+        auctionService.getActive(),
+      ]);
+      setStats(statsData);
+      setActiveAuction(auctionData);
+
+      // Auto dismiss success alert
+      setTimeout(() => {
+        setBidStatus(prev => ({ ...prev, success: '' }));
+      }, 4000);
+    } catch (err) {
+      console.error(err);
+      setBidStatus({ success: '', error: err.message || 'Failed to place bid. Please try again.' });
+    } finally {
+      setSubmittingBid(false);
+    }
+  };
+
   // Load dashboard statistics and active centerpiece
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -158,19 +205,45 @@ export function Dashboard() {
 
               {/* Bidding control interface */}
               <div className="centerpiece-form-area">
-                <div className="input-group-bid">
+                {bidStatus.success && (
+                  <div style={{ color: '#4ade80', fontSize: '0.85rem', fontWeight: '600', marginBottom: '12px', background: 'rgba(74, 222, 128, 0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.15)' }}>
+                    {bidStatus.success}
+                  </div>
+                )}
+                {bidStatus.error && (
+                  <div style={{ color: '#f87171', fontSize: '0.85rem', fontWeight: '600', marginBottom: '12px', background: 'rgba(248, 113, 113, 0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(248, 113, 113, 0.15)' }}>
+                    {bidStatus.error}
+                  </div>
+                )}
+
+                <form onSubmit={handleBidSubmit} className="input-group-bid">
                   <span className="currency-prefix">$</span>
                   <input 
                     type="number" 
                     className="form-input-bid" 
-                    placeholder={`Min Bid: $${(Number(activeAuction.current_price) + 100).toLocaleString('en-US')}`}
-                    disabled
+                    placeholder={`Min Bid: $${(Number(activeAuction.current_price) + 1).toLocaleString('en-US')}`}
+                    value={bidAmount}
+                    onChange={(e) => setBidAmount(e.target.value)}
+                    disabled={timeLeft.expired || submittingBid}
                   />
-                  <button type="button" className="btn-submit-bid" disabled>
-                    Bidding Locked
+                  <button 
+                    type="submit" 
+                    className="btn-submit-bid" 
+                    disabled={timeLeft.expired || submittingBid}
+                    style={{
+                      cursor: !timeLeft.expired ? 'pointer' : 'not-allowed',
+                      opacity: !timeLeft.expired ? 1 : 0.6
+                    }}
+                  >
+                    {submittingBid ? 'Placing...' : !timeLeft.expired ? 'Place Bid' : 'Closed'}
                   </button>
-                </div>
-                <p className="bid-hint-text">Transactional bidding will unlock in Phase 4 (Bidding & Safe Concurrency).</p>
+                </form>
+                <p className="bid-hint-text">
+                  {!timeLeft.expired 
+                    ? 'Enter an amount higher than the current price to place your bid.' 
+                    : 'This featured centerpiece auction has ended.'
+                  }
+                </p>
               </div>
             </div>
           </div>
