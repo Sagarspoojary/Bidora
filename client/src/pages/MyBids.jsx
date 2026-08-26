@@ -57,7 +57,9 @@ export function MyBids() {
                 style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.06, type: 'spring', stiffness: 100 }}
+                whileHover={{ scale: 1.03, y: -6, boxShadow: '0 25px 50px rgba(0, 0, 0, 0.45)' }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ delay: idx * 0.05, type: 'spring', stiffness: 120 }}
               >
                 {/* Catalog Image Banner */}
                 <div className="catalog-image-wrap" style={{ height: '150px' }}>

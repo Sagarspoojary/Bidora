@@ -140,10 +140,12 @@ export function Dashboard() {
           <motion.div 
             key={card.title} 
             className="stat-metric-card glass-card"
-            style={{ backgroundColor: card.color, borderColor: card.border }}
+            style={{ backgroundColor: card.color, borderColor: card.border, cursor: 'pointer' }}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.08, type: 'spring', stiffness: 100 }}
+            whileHover={{ scale: 1.04, y: -4, boxShadow: '0 12px 24px rgba(0, 0, 0, 0.2)' }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ delay: idx * 0.08, type: 'spring', stiffness: 120 }}
           >
             <div className="stat-card-row">
               <span className="stat-card-icon">{card.icon}</span>
@@ -164,7 +166,8 @@ export function Dashboard() {
           className="live-centerpiece-card glass-card"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, type: 'spring', stiffness: 80 }}
+          whileHover={{ y: -4 }}
+          transition={{ delay: 0.3, type: 'spring', stiffness: 90 }}
         >
           {/* Status Badge */}
           <div className="centerpiece-status-badge">🔴 LIVE AUCTION</div>
