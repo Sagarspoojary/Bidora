@@ -9,7 +9,6 @@ import Auctions from './pages/Auctions';
 import CreateAuction from './pages/CreateAuction';
 import MyBids from './pages/MyBids';
 import MyAuctions from './pages/MyAuctions';
-import History from './pages/History';
 import AuctionDetails from './pages/AuctionDetails';
 import './App.css';
 
@@ -43,8 +42,7 @@ function MainAppContent() {
         '#/auctions',
         '#/create-auction',
         '#/my-bids',
-        '#/my-auctions',
-        '#/history'
+        '#/my-auctions'
       ];
 
       const isPathProtected = protectedPaths.includes(currentPath) || isDetailsPath;
@@ -98,8 +96,6 @@ function MainAppContent() {
         return <MyBids />;
       case '#/my-auctions':
         return <MyAuctions />;
-      case '#/history':
-        return <History />;
       default:
         return <Dashboard />;
     }
@@ -111,8 +107,7 @@ function MainAppContent() {
     '#/auctions',
     '#/create-auction',
     '#/my-bids',
-    '#/my-auctions',
-    '#/history'
+    '#/my-auctions'
   ];
 
   if (user && (protectedPaths.includes(currentPath) || isDetailsPath)) {

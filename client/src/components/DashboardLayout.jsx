@@ -63,7 +63,6 @@ export function DashboardLayout({ children, currentPath, navigateTo }) {
     { name: 'Create Auction', path: '#/create-auction', icon: '➕' },
     { name: 'My Bids', path: '#/my-bids', icon: '🏷️' },
     { name: 'My Auctions', path: '#/my-auctions', icon: '💎' },
-    { name: 'History', path: '#/history', icon: '📜' },
   ];
 
   return (
