@@ -79,37 +79,42 @@ export function MyAuctions() {
               <motion.div 
                 key={item.id} 
                 className="workspace-item-card glass-card"
+                style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ type: 'spring', stiffness: 100 }}
                 layout
               >
-                <div className="workspace-card-header">
-                  <h4 className="workspace-item-title">{item.title}</h4>
-                  <span className="status-badge-indicator status-live">
-                    {item.status || 'LIVE'}
-                  </span>
+                {/* Catalog Image Banner */}
+                <div className="catalog-image-wrap" style={{ height: '150px' }}>
+                  <img src={item.image_url || '/images/luxury_watch.jpg'} alt={item.title} className="catalog-img" />
+                  <span className="catalog-status-badge">{item.status || 'LIVE'}</span>
                 </div>
 
-                <div className="workspace-bid-meta">
-                  <div className="meta-price-box">
-                    <span className="meta-price-label">STARTING PRICE</span>
-                    <span className="meta-price-val">${Number(item.starting_price).toLocaleString('en-US')}</span>
+                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                  <div className="workspace-card-header" style={{ marginBottom: '12px' }}>
+                    <h4 className="workspace-item-title">{item.title}</h4>
                   </div>
 
-                  <div className="meta-price-box">
-                    <span className="meta-price-label">CURRENT HIGHEST BID</span>
-                    <span className="meta-price-val price-glow-gold">
-                      ${Number(item.current_price).toLocaleString('en-US')}
+                  <div className="workspace-bid-meta">
+                    <div className="meta-price-box">
+                      <span className="meta-price-label">STARTING PRICE</span>
+                      <span className="meta-price-val">${Number(item.starting_price).toLocaleString('en-US')}</span>
+                    </div>
+
+                    <div className="meta-price-box">
+                      <span className="meta-price-label">CURRENT HIGHEST BID</span>
+                      <span className="meta-price-val price-glow-gold">
+                        ${Number(item.current_price).toLocaleString('en-US')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="workspace-card-footer">
+                    <span className="workspace-time-remaining">
+                      {item.bids_count !== undefined ? `Bids Placed: ${item.bids_count}` : 'Ends In: 24h'}
                     </span>
-                  </div>
-                </div>
-
-                <div className="workspace-card-footer">
-                  <span className="workspace-time-remaining">
-                    {item.bids_count !== undefined ? `Bids Placed: ${item.bids_count}` : 'Ends In: 24h'}
-                  </span>
                   
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button 
@@ -147,8 +152,9 @@ export function MyAuctions() {
                     </button>
                   </div>
                 </div>
-              </motion.div>
-            ))}
+              </div>
+            </motion.div>
+          ))}
           </AnimatePresence>
         </div>
       )}
