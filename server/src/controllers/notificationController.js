@@ -1,4 +1,4 @@
-import pgPool from '../db/pg.js';
+import { pgPool } from '../config/db.js';
 
 // Retrieve notifications for authenticated user
 export async function getNotifications(req, res) {
