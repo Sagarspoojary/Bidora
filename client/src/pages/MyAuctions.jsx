@@ -97,19 +97,32 @@ export function MyAuctions() {
                     <h4 className="workspace-item-title">{item.title}</h4>
                   </div>
 
-                  <div className="workspace-bid-meta">
-                    <div className="meta-price-box">
-                      <span className="meta-price-label">STARTING PRICE</span>
-                      <span className="meta-price-val">${Number(item.starting_price).toLocaleString('en-US')}</span>
-                    </div>
+                  {(() => {
+                    const getCurrencySymbol = (code) => {
+                      switch (code) {
+                        case 'INR': return '₹';
+                        case 'EUR': return '€';
+                        case 'GBP': return '£';
+                        default: return '$';
+                      }
+                    };
+                    const symbol = getCurrencySymbol(item.currency);
+                    return (
+                      <div className="workspace-bid-meta">
+                        <div className="meta-price-box">
+                          <span className="meta-price-label">STARTING PRICE</span>
+                          <span className="meta-price-val">{symbol}{Number(item.starting_price).toLocaleString('en-US')}</span>
+                        </div>
 
-                    <div className="meta-price-box">
-                      <span className="meta-price-label">CURRENT HIGHEST BID</span>
-                      <span className="meta-price-val price-glow-gold">
-                        ${Number(item.current_price).toLocaleString('en-US')}
-                      </span>
-                    </div>
-                  </div>
+                        <div className="meta-price-box">
+                          <span className="meta-price-label">CURRENT HIGHEST BID</span>
+                          <span className="meta-price-val price-glow-gold">
+                            {symbol}{Number(item.current_price).toLocaleString('en-US')}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   <div className="workspace-card-footer">
                     <span className="workspace-time-remaining">

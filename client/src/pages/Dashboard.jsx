@@ -195,40 +195,66 @@ export function Dashboard() {
                 </div>
 
                 {/* Price */}
-                <div className="meta-box price-box">
-                  <span className="meta-label">CURRENT HIGHEST BID</span>
-                  <span className="meta-value price-glow">
-                    ${Number(activeAuction.current_price).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
+                {(() => {
+                  const getCurrencySymbol = (code) => {
+                    switch (code) {
+                      case 'INR': return '₹';
+                      case 'EUR': return '€';
+                      case 'GBP': return '£';
+                      default: return '$';
+                    }
+                  };
+                  const symbol = getCurrencySymbol(activeAuction.currency);
+                  return (
+                    <>
+                      <div className="meta-box price-box">
+                        <span className="meta-label">CURRENT HIGHEST BID</span>
+                        <span className="meta-value price-glow">
+                          {symbol}{Number(activeAuction.current_price).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               {/* Bidding control interface */}
-              <div className="centerpiece-form-area">
-                {bidStatus.success && (
-                  <div style={{ color: '#4ade80', fontSize: '0.85rem', fontWeight: '600', marginBottom: '12px', background: 'rgba(74, 222, 128, 0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.15)' }}>
-                    {bidStatus.success}
-                  </div>
-                )}
-                {bidStatus.error && (
-                  <div style={{ color: '#f87171', fontSize: '0.85rem', fontWeight: '600', marginBottom: '12px', background: 'rgba(248, 113, 113, 0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(248, 113, 113, 0.15)' }}>
-                    {bidStatus.error}
-                  </div>
-                )}
+              {(() => {
+                const getCurrencySymbol = (code) => {
+                  switch (code) {
+                    case 'INR': return '₹';
+                    case 'EUR': return '€';
+                    case 'GBP': return '£';
+                    default: return '$';
+                  }
+                };
+                const symbol = getCurrencySymbol(activeAuction.currency);
+                return (
+                  <div className="centerpiece-form-area">
+                    {bidStatus.success && (
+                      <div style={{ color: '#4ade80', fontSize: '0.85rem', fontWeight: '600', marginBottom: '12px', background: 'rgba(74, 222, 128, 0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.15)' }}>
+                        {bidStatus.success}
+                      </div>
+                    )}
+                    {bidStatus.error && (
+                      <div style={{ color: '#f87171', fontSize: '0.85rem', fontWeight: '600', marginBottom: '12px', background: 'rgba(248, 113, 113, 0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(248, 113, 113, 0.15)' }}>
+                        {bidStatus.error}
+                      </div>
+                    )}
 
-                <form onSubmit={handleBidSubmit} className="input-group-bid">
-                  <span className="currency-prefix">$</span>
-                  <input 
-                    type="number" 
-                    className="form-input-bid" 
-                    placeholder={`Min Bid: $${(Number(activeAuction.current_price) + 1).toLocaleString('en-US')}`}
-                    value={bidAmount}
-                    onChange={(e) => setBidAmount(e.target.value)}
-                    disabled={timeLeft.expired || submittingBid}
-                  />
-                  <button 
-                    type="submit" 
-                    className="btn-submit-bid" 
+                    <form onSubmit={handleBidSubmit} className="input-group-bid">
+                      <span className="currency-prefix">{symbol}</span>
+                      <input 
+                        type="number" 
+                        className="form-input-bid" 
+                        placeholder={`Min Bid: ${symbol}${(Number(activeAuction.current_price) + 1).toLocaleString('en-US')}`}
+                        value={bidAmount}
+                        onChange={(e) => setBidAmount(e.target.value)}
+                        disabled={timeLeft.expired || submittingBid}
+                      />
+                      <button 
+                        type="submit" 
+                        className="btn-submit-bid" 
                     disabled={timeLeft.expired || submittingBid}
                     style={{
                       cursor: !timeLeft.expired ? 'pointer' : 'not-allowed',
@@ -245,8 +271,10 @@ export function Dashboard() {
                   }
                 </p>
               </div>
-            </div>
-          </div>
+            );
+          })()}
+        </div>
+      </div>
         </motion.div>
       ) : (
         <div className="empty-centerpiece-state glass-card">

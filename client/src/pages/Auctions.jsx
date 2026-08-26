@@ -43,6 +43,17 @@ function AuctionCard({ item, idx }) {
     window.location.hash = `#/auctions/${item.id}`;
   };
 
+  const getCurrencySymbol = (code) => {
+    switch (code) {
+      case 'INR': return '₹';
+      case 'EUR': return '€';
+      case 'GBP': return '£';
+      default: return '$';
+    }
+  };
+
+  const symbol = getCurrencySymbol(item.currency);
+
   return (
     <motion.div 
       className="auction-catalog-card glass-card"
@@ -74,11 +85,11 @@ function AuctionCard({ item, idx }) {
         <div className="catalog-price-row">
           <div className="price-item">
             <span className="price-label">STARTING BID</span>
-            <span className="price-val">${Number(item.starting_price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+            <span className="price-val">{symbol}{Number(item.starting_price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="price-item">
             <span className="price-label">CURRENT BID</span>
-            <span className="price-val-glow">${Number(item.current_price || item.starting_price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+            <span className="price-val-glow">{symbol}{Number(item.current_price || item.starting_price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
           </div>
         </div>
 

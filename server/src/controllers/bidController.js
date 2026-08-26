@@ -1,5 +1,14 @@
 import { pgPool } from '../config/db.js';
 
+function getCurrencySymbol(code) {
+  switch (code) {
+    case 'INR': return '₹';
+    case 'EUR': return '€';
+    case 'GBP': return '£';
+    default: return '$';
+  }
+}
+
 // Place a new bid inside a transaction
 export async function placeBid(req, res) {
   const { auction_id, amount } = req.body;
@@ -20,7 +29,7 @@ export async function placeBid(req, res) {
 
     // Retrieve and lock the auction row for updates
     const checkQuery = `
-      SELECT id, current_price, starting_price, start_time, end_time 
+      SELECT id, current_price, starting_price, currency, start_time, end_time 
       FROM auctions 
       WHERE id = $1 
       FOR UPDATE;
@@ -63,9 +72,10 @@ export async function placeBid(req, res) {
 
     if (bidAmount <= currentPrice) {
       await client.query('ROLLBACK');
+      const symbol = getCurrencySymbol(auction.currency);
       return res.status(400).json({
         success: false,
-        message: `Your bid must be strictly higher than the current price of $${currentPrice.toLocaleString('en-US')}.`,
+        message: `Your bid must be strictly higher than the current price of ${symbol}${currentPrice.toLocaleString('en-US')}.`,
       });
     }
 
@@ -112,7 +122,7 @@ export async function getMyBids(req, res) {
   try {
     const query = `
       SELECT DISTINCT ON (b.auction_id) 
-        a.id, a.title, a.image_url, a.starting_price, a.current_price, a.end_time,
+        a.id, a.title, a.image_url, a.starting_price, a.current_price, a.currency, a.end_time,
         b.amount AS user_highest_bid,
         CASE WHEN a.current_price = b.amount THEN 'Winning' ELSE 'Losing' END AS status
       FROM bids b

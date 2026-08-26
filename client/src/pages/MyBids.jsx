@@ -61,19 +61,32 @@ export function MyBids() {
                   </span>
                 </div>
 
-                <div className="workspace-bid-meta">
-                  <div className="meta-price-box">
-                    <span className="meta-price-label">YOUR HIGHEST BID</span>
-                    <span className="meta-price-val">${Number(bid.user_highest_bid).toLocaleString('en-US')}</span>
-                  </div>
+                {(() => {
+                  const getCurrencySymbol = (code) => {
+                    switch (code) {
+                      case 'INR': return '₹';
+                      case 'EUR': return '€';
+                      case 'GBP': return '£';
+                      default: return '$';
+                    }
+                  };
+                  const symbol = getCurrencySymbol(bid.currency);
+                  return (
+                    <div className="workspace-bid-meta">
+                      <div className="meta-price-box">
+                        <span className="meta-price-label">YOUR HIGHEST BID</span>
+                        <span className="meta-price-val">{symbol}{Number(bid.user_highest_bid).toLocaleString('en-US')}</span>
+                      </div>
 
-                  <div className="meta-price-box">
-                    <span className="meta-price-label">CURRENT HIGHEST BID</span>
-                    <span className={`meta-price-val ${isWinning ? 'price-glow-green' : 'price-glow-red'}`}>
-                      ${Number(bid.current_highest_bid).toLocaleString('en-US')}
-                    </span>
-                  </div>
-                </div>
+                      <div className="meta-price-box">
+                        <span className="meta-price-label">CURRENT HIGHEST BID</span>
+                        <span className={`meta-price-val ${isWinning ? 'price-glow-green' : 'price-glow-red'}`}>
+                          {symbol}{Number(bid.current_highest_bid || bid.current_price).toLocaleString('en-US')}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <div className="workspace-card-footer">
                   <span className="workspace-time-remaining">Remaining: 24h</span>

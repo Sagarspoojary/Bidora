@@ -213,62 +213,79 @@ export function AuctionDetails({ auctionId }) {
             </div>
 
             {/* Pricing details */}
-            <div className="bid-stats-section">
-              <div className="stat-card starting-price">
-                <span className="stat-label">STARTING BID</span>
-                <span className="stat-value">${Number(auction.starting_price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-              </div>
-              
-              <div className="stat-card current-bid">
-                <span className="stat-label">CURRENT HIGHEST BID</span>
-                <span className="stat-value-glow">${Number(auction.current_price || auction.starting_price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-              </div>
-            </div>
-
-            {/* Bidding inputs */}
-            <div className="interactive-bid-panel">
-              <h3 className="section-label">PLACE YOUR BID</h3>
-              
-              {bidStatus.success && (
-                <div style={{ color: '#4ade80', fontSize: '0.85rem', fontWeight: '600', marginBottom: '12px', background: 'rgba(74, 222, 128, 0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.15)' }}>
-                  {bidStatus.success}
-                </div>
-              )}
-              {bidStatus.error && (
-                <div style={{ color: '#f87171', fontSize: '0.85rem', fontWeight: '600', marginBottom: '12px', background: 'rgba(248, 113, 113, 0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(248, 113, 113, 0.15)' }}>
-                  {bidStatus.error}
-                </div>
-              )}
-
-              <form onSubmit={handleBidSubmit} className="bid-form-group">
-                <span className="currency-prefix">$</span>
-                <input 
-                  type="number" 
-                  className="bid-input" 
-                  placeholder={`Min bid: $${(Number(auction.current_price || auction.starting_price) + 1).toLocaleString('en-US')}`}
-                  value={bidAmount}
-                  onChange={(e) => setBidAmount(e.target.value)}
-                  disabled={!isBiddingActive || submittingBid} 
-                />
-                <button 
-                  type="submit" 
-                  className="btn-bid-submit" 
-                  disabled={!isBiddingActive || submittingBid}
-                  style={{
-                    cursor: isBiddingActive ? 'pointer' : 'not-allowed',
-                    opacity: isBiddingActive ? 1 : 0.6
-                  }}
-                >
-                  {submittingBid ? 'Placing...' : isBiddingActive ? 'Place Bid' : 'Auction Closed'}
-                </button>
-              </form>
-              <p className="bid-hint">
-                {isBiddingActive 
-                  ? 'Enter a value higher than the current highest bid to place your offer.'
-                  : 'This auction has ended. No further bids can be accepted.'
+            {(() => {
+              const getCurrencySymbol = (code) => {
+                switch (code) {
+                  case 'INR': return '₹';
+                  case 'EUR': return '€';
+                  case 'GBP': return '£';
+                  default: return '$';
                 }
-              </p>
-            </div>
+              };
+              const symbol = getCurrencySymbol(auction.currency);
+              const currentPriceVal = Number(auction.current_price || auction.starting_price);
+
+              return (
+                <>
+                  <div className="bid-stats-section">
+                    <div className="stat-card starting-price">
+                      <span className="stat-label">STARTING BID</span>
+                      <span className="stat-value">{symbol}{Number(auction.starting_price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    
+                    <div className="stat-card current-bid">
+                      <span className="stat-label">CURRENT HIGHEST BID</span>
+                      <span className="stat-value-glow">{symbol}{currentPriceVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+
+                  {/* Bidding inputs */}
+                  <div className="interactive-bid-panel">
+                    <h3 className="section-label">PLACE YOUR BID</h3>
+                    
+                    {bidStatus.success && (
+                      <div style={{ color: '#4ade80', fontSize: '0.85rem', fontWeight: '600', marginBottom: '12px', background: 'rgba(74, 222, 128, 0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.15)' }}>
+                        {bidStatus.success}
+                      </div>
+                    )}
+                    {bidStatus.error && (
+                      <div style={{ color: '#f87171', fontSize: '0.85rem', fontWeight: '600', marginBottom: '12px', background: 'rgba(248, 113, 113, 0.08)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(248, 113, 113, 0.15)' }}>
+                        {bidStatus.error}
+                      </div>
+                    )}
+
+                    <form onSubmit={handleBidSubmit} className="bid-form-group">
+                      <span className="currency-prefix">{symbol}</span>
+                      <input 
+                        type="number" 
+                        className="bid-input" 
+                        placeholder={`Min bid: ${symbol}${(currentPriceVal + 1).toLocaleString('en-US')}`}
+                        value={bidAmount}
+                        onChange={(e) => setBidAmount(e.target.value)}
+                        disabled={!isBiddingActive || submittingBid} 
+                      />
+                      <button 
+                        type="submit" 
+                        className="btn-bid-submit" 
+                        disabled={!isBiddingActive || submittingBid}
+                        style={{
+                          cursor: isBiddingActive ? 'pointer' : 'not-allowed',
+                          opacity: isBiddingActive ? 1 : 0.6
+                        }}
+                      >
+                        {submittingBid ? 'Placing...' : isBiddingActive ? 'Place Bid' : 'Auction Closed'}
+                      </button>
+                    </form>
+                    <p className="bid-hint">
+                      {isBiddingActive 
+                        ? 'Enter a value higher than the current highest bid to place your offer.'
+                        : 'This auction has ended. No further bids can be accepted.'
+                      }
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </section>
       </div>

@@ -22,6 +22,7 @@ function formatAuctionRow(row) {
     image_url: row.image_url,
     starting_price: Number(row.starting_price),
     current_price: Number(row.current_price),
+    currency: row.currency || 'USD',
     start_time: row.start_time,
     end_time: row.end_time,
     status: calculatedStatus, // Server authority dynamic calculation
@@ -36,7 +37,7 @@ export async function getAuctions(req, res) {
 
   try {
     let query = `
-      SELECT id, title, description, image_url, starting_price, current_price, start_time, end_time, status, created_by, created_at
+      SELECT id, title, description, image_url, starting_price, current_price, currency, start_time, end_time, status, created_by, created_at
       FROM auctions
     `;
     const params = [];
@@ -68,7 +69,7 @@ export async function getAuctions(req, res) {
 export async function getActiveAuction(req, res) {
   try {
     const query = `
-      SELECT id, title, description, image_url, starting_price, current_price, start_time, end_time, status, created_by, created_at
+      SELECT id, title, description, image_url, starting_price, current_price, currency, start_time, end_time, status, created_by, created_at
       FROM auctions
       WHERE start_time <= NOW() AND end_time > NOW()
       ORDER BY created_at DESC
@@ -103,7 +104,7 @@ export async function getAuctionById(req, res) {
 
   try {
     const query = `
-      SELECT id, title, description, image_url, starting_price, current_price, start_time, end_time, status, created_by, created_at
+      SELECT id, title, description, image_url, starting_price, current_price, currency, start_time, end_time, status, created_by, created_at
       FROM auctions
       WHERE id = $1;
     `;
@@ -132,14 +133,14 @@ export async function getAuctionById(req, res) {
 
 // Register a new auction item in the database
 export async function createAuction(req, res) {
-  const { title, description, image_url, starting_price, start_time, end_time } = req.body;
+  const { title, description, image_url, starting_price, currency, start_time, end_time } = req.body;
   const userId = req.user.id;
 
   try {
     const query = `
-      INSERT INTO auctions (title, description, image_url, starting_price, current_price, start_time, end_time, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING id, title, starting_price, start_time, end_time, created_by;
+      INSERT INTO auctions (title, description, image_url, starting_price, current_price, currency, start_time, end_time, created_by)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING id, title, starting_price, current_price, currency, start_time, end_time, created_by;
     `;
 
     const result = await pgPool.query(query, [
@@ -148,6 +149,7 @@ export async function createAuction(req, res) {
       image_url || '/images/luxury_watch.jpg',
       starting_price,
       starting_price, // current_price matches starting_price initially
+      currency || 'USD',
       start_time || new Date(),
       end_time,
       userId,
@@ -172,7 +174,7 @@ export async function getMyAuctions(req, res) {
 
   try {
     const query = `
-      SELECT id, title, description, image_url, starting_price, current_price, start_time, end_time, status, created_by, created_at
+      SELECT id, title, description, image_url, starting_price, current_price, currency, start_time, end_time, status, created_by, created_at
       FROM auctions
       WHERE created_by = $1
       ORDER BY created_at DESC;

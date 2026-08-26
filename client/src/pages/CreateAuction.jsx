@@ -7,6 +7,7 @@ export function CreateAuction() {
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [price, setPrice] = useState('');
+  const [currency, setCurrency] = useState('USD');
   const [duration, setDuration] = useState('24'); // Default 24 hours
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
@@ -79,6 +80,7 @@ export function CreateAuction() {
         description: desc,
         image_url: imagePreview || '/images/luxury_watch.jpg',
         starting_price: startPrice,
+        currency: currency,
         end_time: endTime,
         start_time: new Date().toISOString(),
       };
@@ -91,6 +93,7 @@ export function CreateAuction() {
       setName('');
       setDesc('');
       setPrice('');
+      setCurrency('USD');
       setDuration('24');
       setImageFile(null);
       setImagePreview('');
@@ -223,17 +226,32 @@ export function CreateAuction() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 {/* Starting Price */}
                 <div className="input-group">
-                  <label className="input-label" htmlFor="starting-price">Starting Price ($)</label>
-                  <input 
-                    id="starting-price"
-                    type="number" 
-                    step="0.01"
-                    className={`form-input ${errors.price ? 'input-invalid' : ''}`}
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="e.g. 1500.00"
-                    required
-                  />
+                  <label className="input-label" htmlFor="starting-price">Starting Price</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select
+                      id="currency-select"
+                      className="form-input"
+                      style={{ width: '95px', padding: '10px', fontSize: '0.85rem', cursor: 'pointer', flexShrink: 0 }}
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                    >
+                      <option value="USD">USD ($)</option>
+                      <option value="INR">INR (₹)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                    </select>
+                    <input 
+                      id="starting-price"
+                      type="number" 
+                      step="0.01"
+                      className={`form-input ${errors.price ? 'input-invalid' : ''}`}
+                      style={{ flexGrow: 1 }}
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      placeholder="e.g. 1500.00"
+                      required
+                    />
+                  </div>
                   {errors.price && <span className="field-error">{errors.price}</span>}
                 </div>
 
