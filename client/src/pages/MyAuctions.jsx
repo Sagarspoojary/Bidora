@@ -7,6 +7,44 @@ export function MyAuctions() {
   const [loading, setLoading] = useState(true);
   const [deleteStatus, setDeleteStatus] = useState('');
 
+  // Edit/Manage modal states
+  const [editingItem, setEditingItem] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+  const [editCurrency, setEditCurrency] = useState('USD');
+  const [saving, setSaving] = useState(false);
+
+  const handleOpenManage = (item) => {
+    setEditingItem(item);
+    setEditName(item.title);
+    setEditDesc(item.description || '');
+    setEditPrice(item.starting_price);
+    setEditCurrency(item.currency || 'USD');
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editName.trim() || !editDesc.trim() || !editPrice) return;
+
+    try {
+      setSaving(true);
+      await auctionService.update(editingItem.id, {
+        title: editName,
+        description: editDesc,
+        starting_price: Number(editPrice),
+        currency: editCurrency
+      });
+      setEditingItem(null);
+      await loadMyAuctions();
+    } catch (err) {
+      console.error('Failed to update auction:', err);
+      alert('Failed to update auction item.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const loadMyAuctions = async () => {
     try {
       const data = await auctionService.getMyAuctions();
@@ -133,7 +171,8 @@ export function MyAuctions() {
                     <button 
                       type="button" 
                       className="btn-workspace-action" 
-                      disabled
+                      onClick={() => handleOpenManage(item)}
+                      style={{ cursor: 'pointer' }}
                     >
                       Manage
                     </button>
@@ -169,6 +208,83 @@ export function MyAuctions() {
             </motion.div>
           ))}
           </AnimatePresence>
+        </div>
+      )}
+      {editingItem && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '16px' }}>
+          <motion.div 
+            className="glass-card" 
+            style={{ width: '90%', maxWidth: '500px', padding: '32px', textAlign: 'left', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+          >
+            <h3 className="welcome-title" style={{ fontSize: '1.4rem', marginBottom: '20px', color: '#fff' }}>Manage Auction Item</h3>
+            <form onSubmit={handleEditSubmit}>
+              <div className="input-group" style={{ marginBottom: '16px' }}>
+                <label className="input-label" style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Item Name</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  value={editName} 
+                  onChange={(e) => setEditName(e.target.value)} 
+                  required 
+                />
+              </div>
+              <div className="input-group" style={{ marginBottom: '16px' }}>
+                <label className="input-label" style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Description</label>
+                <textarea 
+                  className="form-input form-textarea" 
+                  value={editDesc} 
+                  onChange={(e) => setEditDesc(e.target.value)} 
+                  rows={4} 
+                  required 
+                />
+              </div>
+              <div className="input-group" style={{ marginBottom: '24px' }}>
+                <label className="input-label" style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Starting Price</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <select
+                    className="form-input"
+                    style={{ width: '95px', padding: '10px', fontSize: '0.85rem', cursor: 'pointer', flexShrink: 0 }}
+                    value={editCurrency}
+                    onChange={(e) => setEditCurrency(e.target.value)}
+                  >
+                    <option value="USD">USD ($)</option>
+                    <option value="INR">INR (₹)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                  </select>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    className="form-input" 
+                    style={{ flexGrow: 1 }}
+                    value={editPrice} 
+                    onChange={(e) => setEditPrice(e.target.value)} 
+                    required 
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                <button 
+                  type="button" 
+                  className="btn-workspace-action" 
+                  onClick={() => setEditingItem(null)}
+                  style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', padding: '10px 18px', borderRadius: '8px' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-primary" 
+                  style={{ maxWidth: '160px', padding: '10px 20px', fontSize: '0.85rem' }}
+                  disabled={saving}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </motion.div>
         </div>
       )}
     </motion.div>

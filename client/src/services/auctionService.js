@@ -51,6 +51,18 @@ export const auctionService = {
     return result.data;
   },
 
+  // Update an existing auction details in postgres
+  update: async (id, data) => {
+    const response = await fetch(`${API_BASE_URL}/auctions/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to update auction');
+    return result.data;
+  },
+
   // Get user registered auctions list from postgres
   getMyAuctions: async () => {
     const response = await fetch(`${API_BASE_URL}/auctions/my-auctions`, {

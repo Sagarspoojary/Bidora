@@ -230,3 +230,54 @@ export async function deleteAuction(req, res) {
     });
   }
 }
+
+// Update an existing auction details in postgres
+export async function updateAuction(req, res) {
+  const { id } = req.params;
+  const { title, description, starting_price, currency } = req.body;
+  const userId = req.user.id;
+
+  try {
+    // If bids have been placed, starting_price is usually locked in real apps, but we can update both starting_price and current_price if current_price equals starting_price (meaning no bids placed).
+    const updateQuery = `
+      UPDATE auctions
+      SET 
+        title = $1, 
+        description = $2, 
+        starting_price = $3, 
+        current_price = CASE WHEN current_price = starting_price THEN $3 ELSE current_price END,
+        currency = $4,
+        updated_at = NOW()
+      WHERE id = $5 AND (created_by = $6 OR created_by IS NULL)
+      RETURNING id, title, description, image_url, starting_price, current_price, currency, start_time, end_time, status, created_by, created_at;
+    `;
+
+    const result = await pgPool.query(updateQuery, [
+      title,
+      description,
+      starting_price,
+      currency || 'USD',
+      id,
+      userId
+    ]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Auction not found or permission denied.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Auction updated successfully',
+      data: formatAuctionRow(result.rows[0]),
+    });
+  } catch (error) {
+    console.error('Update auction error:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error while updating auction parameters.',
+    });
+  }
+}
