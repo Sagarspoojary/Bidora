@@ -220,15 +220,53 @@ export function MyAuctions() {
           </AnimatePresence>
         </div>
       )}
-      {editingItem && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '16px' }}>
-          <motion.div 
-            className="glass-card" 
-            style={{ width: '90%', maxWidth: '500px', padding: '32px', textAlign: 'left', border: '1px solid rgba(255, 255, 255, 0.08)' }}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-          >
-            <h3 className="welcome-title" style={{ fontSize: '1.4rem', marginBottom: '20px', color: '#fff' }}>Manage Auction Item</h3>
+      {editingItem && (() => {
+        const isEnded = new Date() > new Date(editingItem.end_time) || editingItem.status === 'ENDED';
+        const winningBid = manageBids.length > 0 ? manageBids[0] : null;
+        return (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '16px' }}>
+            <motion.div 
+              className="glass-card" 
+              style={{ width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', padding: '32px', textAlign: 'left', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+            >
+              <h3 className="welcome-title" style={{ fontSize: '1.4rem', marginBottom: '20px', color: '#fff' }}>Manage Auction Item</h3>
+              
+              {isEnded && (
+                <div style={{ background: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.2)', padding: '16px', borderRadius: '12px', marginBottom: '20px' }}>
+                  <h4 style={{ margin: '0 0 8px 0', fontSize: '0.85rem', color: '#4ade80', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🎉</span> WINNING BIDDER CONTACT DETAILS
+                  </h4>
+                  {winningBid ? (
+                    <div>
+                      <p style={{ margin: '4px 0', fontSize: '0.85rem', color: '#e2e8f0' }}>
+                        <strong>Name:</strong> {winningBid.bidder_name}
+                      </p>
+                      <p style={{ margin: '4px 0', fontSize: '0.85rem', color: '#e2e8f0' }}>
+                        <strong>Email:</strong> <a href={`mailto:${winningBid.bidder_email}`} style={{ color: '#38bdf8', textDecoration: 'underline' }}>{winningBid.bidder_email}</a>
+                      </p>
+                      <p style={{ margin: '4px 0', fontSize: '0.85rem', color: '#e2e8f0' }}>
+                        <strong>Winning Offer:</strong> {(() => {
+                          const getCurrencySymbol = (code) => {
+                            switch (code) {
+                              case 'INR': return '₹';
+                              case 'EUR': return '€';
+                              case 'GBP': return '£';
+                              default: return '$';
+                            }
+                          };
+                          return getCurrencySymbol(editingItem.currency);
+                        })()}{Number(winningBid.amount).toLocaleString('en-US')}
+                      </p>
+                    </div>
+                  ) : (
+                    <p style={{ margin: '4px 0', fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic' }}>
+                      No bids were placed on this auction item.
+                    </p>
+                  )}
+                </div>
+              )}
             <form onSubmit={handleEditSubmit}>
               <div className="input-group" style={{ marginBottom: '16px' }}>
                 <label className="input-label" style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Item Name</label>
@@ -348,7 +386,8 @@ export function MyAuctions() {
             </form>
           </motion.div>
         </div>
-      )}
+        );
+      })()}
     </motion.div>
   );
 }

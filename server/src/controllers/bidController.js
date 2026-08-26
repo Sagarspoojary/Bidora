@@ -209,7 +209,7 @@ export async function getBidsByAuction(req, res) {
 
   try {
     const query = `
-      SELECT b.id, b.amount, b.created_at, u.name AS bidder_name
+      SELECT b.id, b.amount, b.created_at, u.name AS bidder_name, u.email AS bidder_email
       FROM bids b
       JOIN users u ON b.user_id = u.id
       WHERE b.auction_id = $1
