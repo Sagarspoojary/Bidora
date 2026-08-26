@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS auctions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   title VARCHAR(255) NOT NULL,
   description TEXT NOT NULL,
-  image_url VARCHAR(512) NOT NULL,
+  image_url TEXT NOT NULL,
   starting_price NUMERIC(12, 2) NOT NULL,
   current_price NUMERIC(12, 2) NOT NULL,
   start_time TIMESTAMP WITH TIME ZONE NOT NULL,
