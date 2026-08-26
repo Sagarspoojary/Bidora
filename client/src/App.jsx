@@ -64,10 +64,15 @@ function MainAppContent() {
   const handleIntroComplete = () => {
     setShowIntro(false);
     if (!loading) {
+      if (currentPath.startsWith('#/reset-password')) return;
       if (user) {
-        navigateTo('#/dashboard');
+        if (currentPath === '#/login' || currentPath === '#/register' || currentPath === '#/') {
+          navigateTo('#/dashboard');
+        }
       } else {
-        navigateTo('#/login');
+        if (currentPath === '#/') {
+          navigateTo('#/login');
+        }
       }
     }
   };
