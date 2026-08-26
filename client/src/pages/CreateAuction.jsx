@@ -9,12 +9,33 @@ export function CreateAuction() {
   const [price, setPrice] = useState('');
   const [duration, setDuration] = useState('24'); // Default 24 hours
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const fileInputRef = React.useRef(null);
 
   // Status & Validation states
   const [errors, setErrors] = useState({});
   const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [createdItem, setCreatedItem] = useState(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setErrors({ ...errors, image: 'Please select a valid image file.' });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageFile(file);
+        setImagePreview(reader.result);
+        const newErrors = { ...errors };
+        delete newErrors.image;
+        setErrors(newErrors);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -56,7 +77,7 @@ export function CreateAuction() {
       const newAuctionData = {
         title: name,
         description: desc,
-        image_url: '/images/luxury_watch.jpg', // fallback image asset
+        image_url: imagePreview || '/images/luxury_watch.jpg',
         starting_price: startPrice,
         end_time: endTime,
         start_time: new Date().toISOString(),
@@ -72,6 +93,7 @@ export function CreateAuction() {
       setPrice('');
       setDuration('24');
       setImageFile(null);
+      setImagePreview('');
     } catch (err) {
       console.error('Failed to create auction:', err);
       setErrors({ general: 'Failed to create auction. Please try again.' });
@@ -130,14 +152,41 @@ export function CreateAuction() {
                 <div className="alert alert-error">{errors.general}</div>
               )}
 
-              {/* Upload Mock Container */}
+              {/* Upload Container */}
               <div className="input-group">
                 <label className="input-label">Item Display Image</label>
-                <div className="image-upload-mock-box">
-                  <span className="upload-icon">📷</span>
-                  <span className="upload-label">Drag & drop or Click to upload asset image</span>
-                  <span className="upload-sub">Recommended: 800x800px PNG or JPG (using default asset for local demo)</span>
+                <input 
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  style={{ display: 'none' }}
+                />
+                <div 
+                  className="image-upload-mock-box"
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{ overflow: 'hidden', padding: imagePreview ? '0' : '28px 20px', minHeight: '140px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {imagePreview ? (
+                    <div style={{ position: 'relative', width: '100%', height: '180px' }}>
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
+                      <div className="upload-overlay-text" style={{ position: 'absolute', bottom: '0', left: '0', right: '0', background: 'rgba(15, 23, 42, 0.85)', color: '#fff', fontSize: '0.8rem', padding: '8px', textAlign: 'center', fontWeight: '600' }}>
+                        Click to change image
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="upload-icon">📷</span>
+                      <span className="upload-label">Drag & drop or Click to upload asset image</span>
+                      <span className="upload-sub">Recommended: 800x800px PNG or JPG</span>
+                    </>
+                  )}
                 </div>
+                {errors.image && <span className="field-error">{errors.image}</span>}
               </div>
 
               {/* Item Name */}
