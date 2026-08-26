@@ -34,6 +34,8 @@ function MainAppContent() {
 
   // Handle protected redirects and guards
   useEffect(() => {
+    if (showIntro) return; // Do not redirect while intro logo is showing
+
     if (!loading) {
       const isDetailsPath = currentPath.startsWith('#/auctions/') && currentPath.split('/').length === 3;
       const protectedPaths = [
@@ -59,7 +61,7 @@ function MainAppContent() {
         }
       }
     }
-  }, [user, loading, currentPath]);
+  }, [user, loading, currentPath, showIntro]);
 
   const handleIntroComplete = () => {
     setShowIntro(false);
@@ -73,7 +75,7 @@ function MainAppContent() {
   };
 
   // If intro is active on entry, render IntroLogo
-  if (showIntro && currentPath === '#/') {
+  if (showIntro) {
     return <IntroLogo onComplete={handleIntroComplete} />;
   }
 
