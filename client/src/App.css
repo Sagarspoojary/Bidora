@@ -2349,3 +2349,148 @@
     font-size: 1.35rem;
   }
 }
+
+/* ==========================================================================
+   PREMIUM AESTHETICS & MICRO-ANIMATION OVERRIDES (DO NOT ALTER FUNCTIONALITY)
+   ========================================================================== */
+
+/* 1. Global Custom Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.15);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  transition: background 0.3s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* 2. Glassmorphism Elevation & Borders */
+.glass-card, 
+.workspace-item-card, 
+.auction-catalog-card,
+.service-card,
+.dropdown-menu,
+.navbar-header,
+.empty-centerpiece-state {
+  background: rgba(255, 255, 255, 0.02) !important;
+  backdrop-filter: blur(22px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5), 
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 3. Card Hover & Lift Micro-animations */
+.workspace-item-card, 
+.auction-catalog-card,
+.service-card,
+.stat-card-widget {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.workspace-item-card:hover, 
+.auction-catalog-card:hover {
+  transform: translateY(-8px) scale(1.008) !important;
+  border-color: rgba(99, 102, 241, 0.28) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.65), 
+              0 0 25px rgba(99, 102, 241, 0.12),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+.service-card:hover {
+  transform: translateY(-4px) !important;
+  border-color: rgba(52, 211, 153, 0.25) !important;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.5), 
+              0 0 15px rgba(52, 211, 153, 0.08) !important;
+}
+
+/* 4. Form inputs focus glows */
+.form-input, .search-form-wrap, .bid-input, .form-textarea {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease !important;
+}
+
+.form-input:focus, .bid-input:focus, .form-textarea:focus {
+  border-color: rgba(99, 102, 241, 0.6) !important;
+  box-shadow: 0 0 18px rgba(99, 102, 241, 0.25) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* 5. Button Hover Scale & Pulse */
+.btn-primary, .btn-submit-bid, .btn-refresh, .search-submit-btn, .btn-workspace-action {
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              box-shadow 0.2s ease, 
+              background-color 0.2s ease, 
+              opacity 0.2s ease !important;
+}
+
+.btn-primary:hover, .search-submit-btn:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.45) !important;
+}
+
+.btn-primary:active, .search-submit-btn:active {
+  transform: translateY(1px) scale(0.98) !important;
+}
+
+.btn-delete-action:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.15) !important;
+}
+
+/* 6. Glowing Badges & Indicators */
+.catalog-status-badge {
+  text-shadow: 0 0 8px currentColor;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+}
+
+.price-glow-gold {
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+}
+
+.price-glow {
+  text-shadow: 0 0 15px rgba(96, 165, 250, 0.5);
+}
+
+.status-winning {
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.1);
+}
+
+/* 7. Glassmorphic Dropdowns slide in */
+.dropdown-menu {
+  transform-origin: top right;
+  animation: dropdownFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 8. Glowing active link indicators */
+.sidebar-nav-item.active {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border-left: 3px solid #6366f1 !important;
+  color: #fff !important;
+  box-shadow: inset 5px 0 10px -5px rgba(99, 102, 241, 0.3) !important;
+}
+
+.sidebar-nav-item:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: #f1f5f9 !important;
+}
+
