@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import notificationService from '../services/notificationService';
 
 export function DashboardLayout({ children, currentPath, navigateTo }) {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   
   // States for Sidebar and Dropdowns
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -12,6 +12,33 @@ export function DashboardLayout({ children, currentPath, navigateTo }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+
+  // Profile Modal states
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [profileName, setProfileName] = useState(user?.name || '');
+  const [updatingProfile, setUpdatingProfile] = useState(false);
+
+  useEffect(() => {
+    if (user?.name) {
+      setProfileName(user.name);
+    }
+  }, [user]);
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    if (!profileName.trim()) return;
+
+    try {
+      setUpdatingProfile(true);
+      await updateProfile(profileName);
+      setIsProfileModalOpen(false);
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+      alert('Failed to save profile changes.');
+    } finally {
+      setUpdatingProfile(false);
+    }
+  };
 
   // Refs for outside-click detectors
   const profileRef = useRef(null);
@@ -203,16 +230,9 @@ export function DashboardLayout({ children, currentPath, navigateTo }) {
                   <button 
                     type="button" 
                     className="dropdown-item-btn"
-                    onClick={() => { navigateTo('#/dashboard'); setIsProfileOpen(false); }}
+                    onClick={() => { setIsProfileModalOpen(true); setIsProfileOpen(false); }}
                   >
                     👤 Profile
-                  </button>
-                  <button 
-                    type="button" 
-                    className="dropdown-item-btn"
-                    onClick={() => { navigateTo('#/dashboard'); setIsProfileOpen(false); }}
-                  >
-                    ⚙️ Settings
                   </button>
                   
                   <div className="dropdown-divider-line"></div>
@@ -324,6 +344,68 @@ export function DashboardLayout({ children, currentPath, navigateTo }) {
           {children}
         </main>
       </div>
+      {isProfileModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1001, padding: '16px' }}>
+          <motion.div 
+            className="glass-card" 
+            style={{ width: '90%', maxWidth: '400px', padding: '32px', textAlign: 'left', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+          >
+            <h3 className="welcome-title" style={{ fontSize: '1.4rem', marginBottom: '20px', color: '#fff' }}>User Profile Details</h3>
+            <form onSubmit={handleProfileSubmit}>
+              <div className="input-group" style={{ marginBottom: '16px' }}>
+                <label className="input-label" style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Full Name</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  value={profileName} 
+                  onChange={(e) => setProfileName(e.target.value)} 
+                  required 
+                />
+              </div>
+              <div className="input-group" style={{ marginBottom: '16px' }}>
+                <label className="input-label" style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Email Address</label>
+                <input 
+                  type="email" 
+                  className="form-input" 
+                  value={user?.email || ''} 
+                  disabled
+                  style={{ opacity: 0.6, cursor: 'not-allowed' }}
+                />
+              </div>
+              <div className="input-group" style={{ marginBottom: '16px' }}>
+                <label className="input-label" style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Account Role</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  value={user?.role === 'ADMIN' ? 'Administrator' : 'Registered Bidder'} 
+                  disabled
+                  style={{ opacity: 0.6, cursor: 'not-allowed', textTransform: 'capitalize' }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+                <button 
+                  type="button" 
+                  className="btn-workspace-action" 
+                  onClick={() => setIsProfileModalOpen(false)}
+                  style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', padding: '10px 18px', borderRadius: '8px' }}
+                >
+                  Close
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-primary" 
+                  style={{ maxWidth: '140px', padding: '10px 20px', fontSize: '0.85rem' }}
+                  disabled={updatingProfile}
+                >
+                  {updatingProfile ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
