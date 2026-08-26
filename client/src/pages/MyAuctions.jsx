@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import auctionService from '../services/auctionService';
+import bidService from '../services/bidService';
 
 export function MyAuctions() {
   const [myAuctions, setMyAuctions] = useState([]);
@@ -14,13 +15,22 @@ export function MyAuctions() {
   const [editPrice, setEditPrice] = useState('');
   const [editCurrency, setEditCurrency] = useState('USD');
   const [saving, setSaving] = useState(false);
+  const [manageBids, setManageBids] = useState([]);
 
-  const handleOpenManage = (item) => {
+  const handleOpenManage = async (item) => {
     setEditingItem(item);
     setEditName(item.title);
     setEditDesc(item.description || '');
     setEditPrice(item.starting_price);
     setEditCurrency(item.currency || 'USD');
+    setManageBids([]); // reset loader
+
+    try {
+      const bids = await bidService.getBidsByAuction(item.id);
+      setManageBids(bids);
+    } catch (err) {
+      console.error('Failed to load bids for manage modal:', err);
+    }
   };
 
   const handleEditSubmit = async (e) => {
@@ -265,6 +275,58 @@ export function MyAuctions() {
                   />
                 </div>
               </div>
+
+              {/* Private Bids Ledger */}
+              <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px', marginBottom: '20px' }}>
+                <label className="input-label" style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Bid Ledger History</span>
+                  <span>{manageBids.length} Offers Placed</span>
+                </label>
+                {manageBids.length === 0 ? (
+                  <p style={{ fontSize: '0.8rem', color: '#64748b', fontStyle: 'italic', margin: '8px 0 0 0' }}>
+                    No bids have been submitted for this item yet.
+                  </p>
+                ) : (
+                  <div style={{ maxHeight: '140px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px' }}>
+                    {manageBids.map((bid, idx) => (
+                      <div 
+                        key={bid.id} 
+                        style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center', 
+                          padding: '8px 12px', 
+                          background: idx === 0 ? 'rgba(74, 222, 128, 0.04)' : 'rgba(255,255,255,0.02)', 
+                          border: idx === 0 ? '1px solid rgba(74, 222, 128, 0.15)' : '1px solid rgba(255,255,255,0.05)',
+                          borderRadius: '8px',
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        <div>
+                          <span style={{ fontWeight: '700', color: idx === 0 ? '#4ade80' : '#fff' }}>{bid.bidder_name}</span>
+                          <span style={{ fontSize: '0.65rem', color: '#64748b', marginLeft: '8px' }}>
+                            {new Date(bid.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <span style={{ fontWeight: '800', color: idx === 0 ? '#4ade80' : '#cbd5e1' }}>
+                          {(() => {
+                            const getCurrencySymbol = (code) => {
+                              switch (code) {
+                                case 'INR': return '₹';
+                                case 'EUR': return '€';
+                                case 'GBP': return '£';
+                                default: return '$';
+                              }
+                            };
+                            return getCurrencySymbol(editingItem.currency);
+                          })()}{Number(bid.amount).toLocaleString('en-US')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                 <button 
                   type="button" 

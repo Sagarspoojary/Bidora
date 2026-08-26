@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 import auctionService from '../services/auctionService';
 import bidService from '../services/bidService';
 
 export function AuctionDetails({ auctionId }) {
+  const { user } = useAuth();
   const [auction, setAuction] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -293,47 +295,62 @@ export function AuctionDetails({ auctionId }) {
                     </p>
                   </div>
 
-                  {/* Bid History Ledger */}
+                  {/* Personalized User Bidding Summary Box */}
                   <div className="bid-history-section" style={{ marginTop: '24px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
-                    <h3 className="section-label" style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', color: '#94a3b8' }}>
-                      <span>BID HISTORY</span>
-                      <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 'normal' }}>{bidsList.length} offers</span>
+                    <h3 className="section-label" style={{ marginBottom: '12px', fontSize: '0.85rem', color: '#94a3b8' }}>
+                      YOUR BIDDING STATUS
                     </h3>
-                    {bidsList.length === 0 ? (
-                      <p style={{ fontSize: '0.85rem', color: '#64748b', fontStyle: 'italic', textAlign: 'center', padding: '12px' }}>
-                        No bids placed yet. Be the first to bid!
-                      </p>
-                    ) : (
-                      <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
-                        {bidsList.map((bid, index) => (
-                          <div 
-                            key={bid.id} 
-                            style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              alignItems: 'center', 
-                              padding: '10px 14px', 
-                              background: index === 0 ? 'rgba(74, 222, 128, 0.04)' : 'rgba(255,255,255,0.02)', 
-                              border: index === 0 ? '1px solid rgba(74, 222, 128, 0.15)' : '1px solid rgba(255,255,255,0.04)',
-                              borderRadius: '10px' 
-                            }}
-                          >
-                            <div>
-                              <span style={{ fontSize: '0.85rem', fontWeight: '700', color: index === 0 ? '#4ade80' : '#fff', display: 'block' }}>
-                                {bid.bidder_name}
-                                {index === 0 && <span style={{ fontSize: '0.65rem', color: '#4ade80', marginLeft: '6px', background: 'rgba(74,222,128,0.12)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>Highest</span>}
-                              </span>
-                              <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
-                                {new Date(bid.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                              </span>
-                            </div>
-                            <span style={{ fontSize: '0.9rem', fontWeight: '800', color: index === 0 ? '#4ade80' : '#e2e8f0' }}>
-                              {symbol}{Number(bid.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    {(() => {
+                      const userBids = bidsList.filter(bid => bid.bidder_name === user?.name);
+                      const userHighestBid = userBids.length > 0 ? Math.max(...userBids.map(b => b.amount)) : 0;
+
+                      if (userHighestBid === 0) {
+                        return (
+                          <p style={{ fontSize: '0.85rem', color: '#64748b', fontStyle: 'italic', textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.01)', borderRadius: '10px', border: '1px dashed rgba(255,255,255,0.05)' }}>
+                            You have not placed any bids on this item yet. Enter an amount above to start bidding.
+                          </p>
+                        );
+                      }
+
+                      const isWinning = currentPriceVal === userHighestBid;
+
+                      return (
+                        <div 
+                          style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center', 
+                            padding: '14px 18px', 
+                            background: isWinning ? 'rgba(74, 222, 128, 0.04)' : 'rgba(239, 68, 68, 0.04)', 
+                            border: isWinning ? '1px solid rgba(74, 222, 128, 0.15)' : '1px solid rgba(239, 68, 68, 0.15)',
+                            borderRadius: '12px' 
+                          }}
+                        >
+                          <div>
+                            <span style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                              Your Highest Offer
+                            </span>
+                            <span style={{ fontSize: '1.25rem', fontWeight: '800', color: '#fff', marginTop: '4px', display: 'block' }}>
+                              {symbol}{userHighestBid.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </span>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                          
+                          <span 
+                            style={{ 
+                              fontSize: '0.8rem', 
+                              fontWeight: 'bold', 
+                              padding: '6px 14px', 
+                              borderRadius: '20px', 
+                              background: isWinning ? 'rgba(74,222,128,0.12)' : 'rgba(239,68,68,0.12)', 
+                              color: isWinning ? '#4ade80' : '#f87171',
+                              border: isWinning ? '1px solid rgba(74,222,128,0.2)' : '1px solid rgba(239,68,68,0.2)'
+                            }}
+                          >
+                            {isWinning ? '🥇 WINNING' : '❌ OUTBID'}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </>
               );
