@@ -21,6 +21,18 @@ services:
     volumes:
       - redis_data:/data
 
+  mongodb:
+    image: mongo:6.0
+    container_name: bidora-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+    volumes:
+      - mongodb_data:/data/db
+
 volumes:
   postgres_data:
   redis_data:
+  mongodb_data:
