@@ -56,9 +56,9 @@ export function CreateAuction() {
 
     if (!duration) newErrors.duration = 'Auction duration is required';
     else {
-      const hours = parseInt(duration);
+      const hours = parseFloat(duration);
       if (isNaN(hours) || hours <= 0 || hours > 168) {
-        newErrors.duration = 'Duration must be between 1 and 168 hours (1 week)';
+        newErrors.duration = 'Duration must be between 2 minutes and 168 hours (1 week)';
       }
     }
 
@@ -72,7 +72,8 @@ export function CreateAuction() {
 
     setLoading(true);
     try {
-      const endTime = new Date(Date.now() + parseInt(duration) * 60 * 60 * 1000).toISOString();
+      const hoursVal = parseFloat(duration);
+      const endTime = new Date(Date.now() + hoursVal * 60 * 60 * 1000).toISOString();
       const startPrice = parseFloat(price);
       
       const newAuctionData = {
@@ -264,6 +265,7 @@ export function CreateAuction() {
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                   >
+                    <option value="0.033333">2 Minutes (Testing)</option>
                     <option value="12">12 Hours</option>
                     <option value="24">24 Hours (1 Day)</option>
                     <option value="48">48 Hours (2 Days)</option>
